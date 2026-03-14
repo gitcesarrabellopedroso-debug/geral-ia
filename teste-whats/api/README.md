@@ -51,6 +51,110 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - `GET /api/v1/whatsapp-sessions/{session_id}`
 - `PATCH /api/v1/whatsapp-sessions/{session_id}`
 - `DELETE /api/v1/whatsapp-sessions/{session_id}`
+- `GET /api/v1/whatsapp/status`
+- `POST /api/v1/whatsapp/session/start`
+- `POST /api/v1/whatsapp/session/disconnect`
+- `POST /api/v1/whatsapp/webhooks/session-events`
+
+Compatibilidade com o frontend atual:
+
+- `GET /api/whatsapp/status`
+- `POST /api/whatsapp/session/start`
+- `POST /api/whatsapp/session/disconnect`
+- `POST /api/whatsapp/webhooks/session-events`
+
+## Bridge real do WhatsApp
+
+Esta API agora ja suporta um fluxo de bridge externa para WhatsApp real. O backend Python:
+
+- recebe a chamada do frontend
+- consulta ou inicia a sessao via bridge HTTP
+- persiste o estado da sessao no MongoDB
+- devolve status, QR e metadados para a interface
+
+Variaveis novas:
+
+- `WHATSAPP_BRIDGE_ENABLED`
+- `WHATSAPP_BRIDGE_BASE_URL`
+- `WHATSAPP_BRIDGE_TIMEOUT_SECONDS`
+- `WHATSAPP_BRIDGE_API_KEY`
+- `WHATSAPP_DEFAULT_SESSION_KEY`
+- `BACKEND_CORS_ORIGINS`
+
+### Contrato esperado da bridge
+
+#### `POST /sessions/{session_key}/start`
+
+```json
+{
+  "status": "awaiting_qr",
+  "session_id": "provider-session-123",
+  "phone": null,
+  "qr_token": "2@ABCDEF",
+  "qr_image_data_url": "data:image/png;base64,...",
+  "metadata": {
+    "provider": "whatsmeow"
+  }
+}
+```
+
+#### `GET /sessions/{session_key}`
+
+```json
+{
+  "status": "connected",
+  "session_id": "provider-session-123",
+  "phone": "5511999990000",
+  "qr_token": null,
+  "qr_image_data_url": null,
+  "metadata": {
+    "provider": "whatsmeow"
+  }
+}
+```
+
+#### `POST /sessions/{session_key}/disconnect`
+
+```json
+{
+  "status": "offline",
+  "session_id": "provider-session-123",
+  "phone": null,
+  "qr_token": null,
+  "qr_image_data_url": null,
+  "metadata": {
+    "provider": "whatsmeow"
+  }
+}
+```
+
+### Webhook opcional da bridge para esta API
+
+Quando a bridge quiser empurrar mudancas de estado sem polling, ela pode chamar:
+
+`POST /api/v1/whatsapp/webhooks/session-events`
+
+Header opcional:
+
+`X-API-Key: <WHATSAPP_BRIDGE_API_KEY>`
+
+Payload:
+
+```json
+{
+  "session_key": "principal",
+  "status": "connected",
+  "provider_session_id": "provider-session-123",
+  "phone": "5511999990000",
+  "qr_token": null,
+  "qr_image_data_url": null,
+  "last_error": null,
+  "metadata": {
+    "provider": "whatsmeow",
+    "event": "connected"
+  }
+}
+```
 
 ## Exemplo de criacao
 

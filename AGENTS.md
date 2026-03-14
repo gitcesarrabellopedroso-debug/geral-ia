@@ -122,6 +122,9 @@
   - simula pareamento
   - simula desconexao
   - possui base de API pronta para conectar ao MongoDB
+  - backend agora possui camada de runtime para sessao WhatsApp real via bridge HTTP configuravel
+  - endpoints de runtime expostos em `/api/v1/whatsapp/*` e compatibilidade em `/api/whatsapp/*`
+  - webhook de sincronizacao de eventos da bridge implementado
 - Proximo passo previsto:
   - conectar a API a uma bridge backend real para WhatsApp
   - trocar QR simulado por QR real

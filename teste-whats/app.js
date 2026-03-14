@@ -292,9 +292,9 @@ async function disconnectFromApi() {
 function syncStateFromApi(payload, message) {
   touchState({
     status: payload.status || "offline",
-    sessionId: payload.sessionId || null,
+    sessionId: payload.session_id || payload.sessionId || null,
     phone: payload.phone || null,
-    qrToken: payload.qrToken || null,
+    qrToken: payload.qr_token || payload.qrToken || null,
   });
 
   addLog("API sincronizada", message);

@@ -16,6 +16,10 @@ class WhatsAppSessionBase(APIModel):
     session_key: str = Field(min_length=3, max_length=80)
     status: SessionStatus = "offline"
     phone: str | None = Field(default=None, max_length=32)
+    provider_session_id: str | None = Field(default=None, max_length=120)
+    qr_token: str | None = Field(default=None, max_length=2048)
+    qr_image_data_url: str | None = Field(default=None, max_length=400000)
+    last_error: str | None = Field(default=None, max_length=500)
     metadata: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("session_key")
@@ -31,6 +35,10 @@ class WhatsAppSessionCreate(WhatsAppSessionBase):
 class WhatsAppSessionUpdate(APIModel):
     status: SessionStatus | None = None
     phone: str | None = Field(default=None, max_length=32)
+    provider_session_id: str | None = Field(default=None, max_length=120)
+    qr_token: str | None = Field(default=None, max_length=2048)
+    qr_image_data_url: str | None = Field(default=None, max_length=400000)
+    last_error: str | None = Field(default=None, max_length=500)
     metadata: dict[str, Any] | None = None
 
 
@@ -50,3 +58,32 @@ class HealthResponse(APIModel):
     app_name: str
     environment: str
     mongodb: str
+
+
+class WhatsAppRuntimeResponse(APIModel):
+    session_id: str | None = None
+    session_key: str
+    status: SessionStatus
+    phone: str | None = None
+    qr_token: str | None = None
+    qr_image_data_url: str | None = None
+    provider_session_id: str | None = None
+    last_error: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    updated_at: datetime | None = None
+
+
+class WhatsAppBridgeWebhookPayload(APIModel):
+    session_key: str = Field(min_length=3, max_length=80)
+    status: SessionStatus
+    phone: str | None = Field(default=None, max_length=32)
+    provider_session_id: str | None = Field(default=None, max_length=120)
+    qr_token: str | None = Field(default=None, max_length=2048)
+    qr_image_data_url: str | None = Field(default=None, max_length=400000)
+    last_error: str | None = Field(default=None, max_length=500)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("session_key")
+    @classmethod
+    def normalize_webhook_session_key(cls, value: str) -> str:
+        return value.strip().lower().replace(" ", "-")

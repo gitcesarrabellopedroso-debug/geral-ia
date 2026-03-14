@@ -43,11 +43,36 @@ class WhatsAppSessionRepository:
         total = await self.collection.count_documents({})
         return items, total
 
+    async def get_by_session_key(self, session_key: str) -> dict | None:
+        document = await self.collection.find_one({"session_key": session_key})
+        if not document:
+            return None
+        return serialize_mongo_document(document)
+
     async def get(self, session_id: str) -> dict | None:
         document = await self.collection.find_one({"_id": ObjectId(session_id)})
         if not document:
             return None
         return serialize_mongo_document(document)
+
+    async def upsert_by_session_key(self, session_key: str, payload: dict) -> dict:
+        payload = {
+            **payload,
+            "session_key": session_key,
+            "updated_at": utc_now(),
+        }
+
+        result = await self.collection.find_one_and_update(
+            {"session_key": session_key},
+            {
+                "$set": payload,
+                "$setOnInsert": {"created_at": utc_now()},
+            },
+            upsert=True,
+            return_document=ReturnDocument.AFTER,
+        )
+
+        return serialize_mongo_document(result)
 
     async def update(self, session_id: str, payload: WhatsAppSessionUpdate) -> dict | None:
         update_fields = payload.model_dump(exclude_none=True)

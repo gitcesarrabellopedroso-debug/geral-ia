@@ -6,13 +6,14 @@ const initialState = {
   sessionId: null,
   phone: null,
   qrToken: null,
+  qrImageDataUrl: null,
   lastUpdate: null,
   logs: [],
 };
 
 const initialConfig = {
   mode: "mock",
-  apiBase: "http://localhost:8080",
+  apiBase: "http://localhost:8000",
 };
 
 const elements = {
@@ -26,6 +27,11 @@ const elements = {
   eventLog: document.querySelector("#eventLog"),
   modeSelect: document.querySelector("#modeSelect"),
   apiBaseInput: document.querySelector("#apiBaseInput"),
+  configFeedback: document.querySelector("#configFeedback"),
+  messagePhoneInput: document.querySelector("#messagePhoneInput"),
+  messageTextInput: document.querySelector("#messageTextInput"),
+  sendMessageButton: document.querySelector("#sendMessageButton"),
+  sendMessageFeedback: document.querySelector("#sendMessageFeedback"),
   startButton: document.querySelector("#startButton"),
   simulateConnectButton: document.querySelector("#simulateConnectButton"),
   disconnectButton: document.querySelector("#disconnectButton"),
@@ -37,6 +43,8 @@ const elements = {
 
 let state = loadJson(STORAGE_KEY, initialState);
 let config = loadJson(CONFIG_KEY, initialConfig);
+let configFeedbackTimer = null;
+let sendMessageFeedbackTimer = null;
 
 function loadJson(key, fallback) {
   try {
@@ -54,6 +62,31 @@ function saveState() {
 
 function saveConfig() {
   window.localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
+}
+
+function showConfigFeedback(message) {
+  elements.configFeedback.textContent = message;
+
+  if (configFeedbackTimer) {
+    window.clearTimeout(configFeedbackTimer);
+  }
+
+  configFeedbackTimer = window.setTimeout(() => {
+    elements.configFeedback.textContent = "";
+  }, 2500);
+}
+
+function showSendMessageFeedback(message, isError = false) {
+  elements.sendMessageFeedback.textContent = message;
+  elements.sendMessageFeedback.style.color = isError ? "var(--danger)" : "var(--accent)";
+
+  if (sendMessageFeedbackTimer) {
+    window.clearTimeout(sendMessageFeedbackTimer);
+  }
+
+  sendMessageFeedbackTimer = window.setTimeout(() => {
+    elements.sendMessageFeedback.textContent = "";
+  }, 3500);
 }
 
 function addLog(title, message) {
@@ -101,11 +134,30 @@ function setStatusVisual(status) {
 }
 
 function renderQr() {
-  if (state.status !== "awaiting_qr" || !state.qrToken) {
+  if (state.status !== "awaiting_qr") {
     elements.qrStage.innerHTML = `
       <div class="qr-placeholder">
         <span>QR indisponivel</span>
         <small>Inicie a sessao para gerar um QR de teste.</small>
+      </div>
+    `;
+    return;
+  }
+
+  if (state.qrImageDataUrl) {
+    elements.qrStage.innerHTML = `
+      <div class="qr-box qr-box-image">
+        <img class="qr-image" src="${state.qrImageDataUrl}" alt="QR Code do WhatsApp para pareamento">
+      </div>
+    `;
+    return;
+  }
+
+  if (!state.qrToken) {
+    elements.qrStage.innerHTML = `
+      <div class="qr-placeholder">
+        <span>Gerando QR</span>
+        <small>Aguardando a bridge devolver a imagem do QR real.</small>
       </div>
     `;
     return;
@@ -165,6 +217,13 @@ function render() {
   renderConfig();
 }
 
+function syncConfigFromInputs() {
+  config = {
+    mode: elements.modeSelect.value,
+    apiBase: elements.apiBaseInput.value.trim() || initialConfig.apiBase,
+  };
+}
+
 function touchState(partial) {
   state = {
     ...state,
@@ -184,6 +243,9 @@ function randomToken(size = 8) {
 }
 
 async function startSession() {
+  syncConfigFromInputs();
+  saveConfig();
+
   if (config.mode === "api") {
     return startSessionFromApi();
   }
@@ -192,6 +254,7 @@ async function startSession() {
     status: "awaiting_qr",
     sessionId: `session-${randomToken(10)}`,
     qrToken: `QR-${randomToken(6)}`,
+    qrImageDataUrl: null,
     phone: null,
   });
 
@@ -199,6 +262,9 @@ async function startSession() {
 }
 
 async function simulateConnect() {
+  syncConfigFromInputs();
+  saveConfig();
+
   if (config.mode === "api") {
     return refreshStatusFromApi();
   }
@@ -212,12 +278,16 @@ async function simulateConnect() {
     status: "connected",
     phone: "+55 11 99999-0000",
     qrToken: null,
+    qrImageDataUrl: null,
   });
 
   addLog("Pareamento concluido", "Leitura do QR simulada com sucesso.");
 }
 
 async function disconnectSession() {
+  syncConfigFromInputs();
+  saveConfig();
+
   if (config.mode === "api") {
     return disconnectFromApi();
   }
@@ -227,12 +297,16 @@ async function disconnectSession() {
     sessionId: null,
     phone: null,
     qrToken: null,
+    qrImageDataUrl: null,
   });
 
   addLog("Sessao encerrada", "A conexao local foi limpa.");
 }
 
 async function refreshStatus() {
+  syncConfigFromInputs();
+  saveConfig();
+
   if (config.mode === "api") {
     return refreshStatusFromApi();
   }
@@ -244,13 +318,10 @@ async function refreshStatus() {
 }
 
 function saveConfiguration() {
-  config = {
-    mode: elements.modeSelect.value,
-    apiBase: elements.apiBaseInput.value.trim() || initialConfig.apiBase,
-  };
-
+  syncConfigFromInputs();
   saveConfig();
   addLog("Configuracao salva", `Modo atual: ${config.mode}.`);
+  showConfigFeedback("Configuracao salva.");
 }
 
 async function startSessionFromApi() {
@@ -289,12 +360,56 @@ async function disconnectFromApi() {
   }
 }
 
+async function sendMessageFromApi() {
+  syncConfigFromInputs();
+  saveConfig();
+
+  if (config.mode !== "api") {
+    showSendMessageFeedback("Troque para API externa antes de enviar.", true);
+    return;
+  }
+
+  const phone = elements.messagePhoneInput.value.trim();
+  const text = elements.messageTextInput.value.trim();
+
+  if (!phone || !text) {
+    showSendMessageFeedback("Preencha numero e mensagem.", true);
+    return;
+  }
+
+  try {
+    const response = await fetch(`${config.apiBase}/api/whatsapp/messages/send`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phone,
+        text,
+      }),
+    });
+
+    const payload = await response.json();
+
+    if (!response.ok) {
+      throw new Error(payload.detail || "Falha ao enviar mensagem.");
+    }
+
+    addLog("Mensagem enviada", `Envio confirmado para ${payload.to}.`);
+    showSendMessageFeedback("Mensagem enviada.");
+    elements.messageTextInput.value = "";
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Falha ao enviar mensagem.";
+    addLog("Erro no envio", message);
+    showSendMessageFeedback(message, true);
+  }
+}
+
 function syncStateFromApi(payload, message) {
   touchState({
     status: payload.status || "offline",
     sessionId: payload.session_id || payload.sessionId || null,
     phone: payload.phone || null,
     qrToken: payload.qr_token || payload.qrToken || null,
+    qrImageDataUrl: payload.qr_image_data_url || payload.qrImageDataUrl || null,
   });
 
   addLog("API sincronizada", message);
@@ -305,6 +420,7 @@ elements.simulateConnectButton.addEventListener("click", simulateConnect);
 elements.disconnectButton.addEventListener("click", disconnectSession);
 elements.refreshButton.addEventListener("click", refreshStatus);
 elements.saveConfigButton.addEventListener("click", saveConfiguration);
+elements.sendMessageButton.addEventListener("click", sendMessageFromApi);
 elements.clearLogButton.addEventListener("click", () => {
   state.logs = [];
   saveState();

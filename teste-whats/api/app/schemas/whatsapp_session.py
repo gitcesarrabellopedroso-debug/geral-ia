@@ -87,3 +87,25 @@ class WhatsAppBridgeWebhookPayload(APIModel):
     @classmethod
     def normalize_webhook_session_key(cls, value: str) -> str:
         return value.strip().lower().replace(" ", "-")
+
+
+class WhatsAppSendMessageRequest(APIModel):
+    session_key: str | None = Field(default=None, min_length=3, max_length=80)
+    phone: str = Field(min_length=8, max_length=32)
+    text: str = Field(min_length=1, max_length=4096)
+
+    @field_validator("session_key")
+    @classmethod
+    def normalize_session_key(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return value.strip().lower().replace(" ", "-")
+
+
+class WhatsAppSendMessageResponse(APIModel):
+    session_key: str
+    provider_message_id: str | None = None
+    to: str
+    text: str
+    status: str
+    metadata: dict[str, Any] = Field(default_factory=dict)

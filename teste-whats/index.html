@@ -107,16 +107,19 @@
 
         <label class="field">
           <span>Base URL da API</span>
-          <input id="apiBaseInput" type="text" placeholder="http://localhost:8080">
+          <input id="apiBaseInput" type="text" placeholder="http://localhost:8000">
         </label>
 
         <button class="secondary-button wide-button" id="saveConfigButton" type="button">
           Salvar configuracao
         </button>
 
+        <p class="config-feedback" id="configFeedback" aria-live="polite"></p>
+
         <p class="microcopy">
           Em modo local, o projeto simula QR, conexao e desconexao. Em modo API, ele
-          tenta conversar com os endpoints reais definidos no README.
+          tenta conversar com a API local em `localhost:8000`, que por sua vez consulta
+          a bridge do WhatsApp em `localhost:8081`.
         </p>
       </article>
 
@@ -130,6 +133,31 @@
         </div>
 
         <ul class="event-log" id="eventLog"></ul>
+      </article>
+
+      <article class="panel panel-send">
+        <div class="panel-head">
+          <div>
+            <p class="panel-kicker">Mensagens</p>
+            <h2>Envio real</h2>
+          </div>
+        </div>
+
+        <label class="field">
+          <span>Numero com DDI</span>
+          <input id="messagePhoneInput" type="text" placeholder="5511999990000">
+        </label>
+
+        <label class="field">
+          <span>Mensagem</span>
+          <textarea id="messageTextInput" rows="5" placeholder="Digite a mensagem para enviar pelo WhatsApp"></textarea>
+        </label>
+
+        <button class="primary-button wide-button" id="sendMessageButton" type="button">
+          Enviar mensagem
+        </button>
+
+        <p class="config-feedback" id="sendMessageFeedback" aria-live="polite"></p>
       </article>
     </section>
   </main>

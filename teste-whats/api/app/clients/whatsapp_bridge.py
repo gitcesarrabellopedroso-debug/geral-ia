@@ -23,7 +23,7 @@ class WhatsAppBridgeClient:
             headers["X-API-Key"] = self.settings.whatsapp_bridge_api_key
         return headers
 
-    async def _request(self, method: str, path: str) -> dict[str, Any]:
+    async def _request(self, method: str, path: str, json: dict[str, Any] | None = None) -> dict[str, Any]:
         if not self.settings.whatsapp_bridge_enabled:
             raise WhatsAppBridgeNotConfiguredError("WhatsApp bridge is not enabled.")
 
@@ -32,7 +32,7 @@ class WhatsAppBridgeClient:
 
         try:
             async with httpx.AsyncClient(timeout=self.settings.whatsapp_bridge_timeout_seconds) as client:
-                response = await client.request(method, url, headers=self._build_headers())
+                response = await client.request(method, url, headers=self._build_headers(), json=json)
                 response.raise_for_status()
         except httpx.HTTPStatusError as exc:
             detail = exc.response.text.strip() or str(exc)
@@ -53,3 +53,13 @@ class WhatsAppBridgeClient:
 
     async def disconnect_session(self, session_key: str) -> dict[str, Any]:
         return await self._request("POST", f"/sessions/{session_key}/disconnect")
+
+    async def send_message(self, session_key: str, phone: str, text: str) -> dict[str, Any]:
+        return await self._request(
+            "POST",
+            f"/sessions/{session_key}/messages",
+            json={
+                "phone": phone,
+                "text": text,
+            },
+        )

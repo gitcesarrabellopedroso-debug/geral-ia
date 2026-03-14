@@ -61,6 +61,29 @@
   - Revisar credenciais padrao em producao.
   - Confirmar permissao de escrita em `data/config.json` e `assets/pedras/`.
 
+## Estado Meta / WhatsApp consolidado
+
+- Portifolio principal para operacao real: `BWS`.
+- Conta principal de WhatsApp em uso dentro de `BWS`: `UZA Multinivel`.
+- Numero real confirmado em uso: `+55 19 99727-5276`.
+- Status atual da conta principal do WhatsApp em `BWS`: `Verificado` e `Aprovado`.
+- App tecnico principal ligado a essa operacao: `Scalle_wpp`.
+- Conta de teste mantida em `BWS`: `Test WhatsApp Business Account`.
+- Portifolio `BWS UZA multinivel`: tratado como ambiente de teste/legado e nao como base principal de operacao.
+- Portifolio `UZA Multinivel`: tratado como legado/revisao; nao usar como base operacional principal ate limpeza futura.
+- Regra operacional definida:
+  - operar manualmente a partir de `BWS`
+  - tratar `BWS UZA multinivel` apenas como teste enquanto existir
+  - nao tomar decisoes estruturais usando `UZA Multinivel` sem revisao item a item
+- Nome de exibicao do numero principal `+55 19 99727-5276`:
+  - `UZA Multinivel` foi rejeitado
+  - novo nome enviado para revisao: `Uza`
+  - envio do novo nome nao derrubou o funcionamento do numero; status observado apos mudanca: `Em analise`
+- Integracao Meta / Cloud API:
+  - dados minimos necessarios da Meta: `Phone Number ID`, `WABA ID`, `Access Token`, `App ID`, `App Secret`
+  - dados definidos no sistema integrador: `Webhook URL`, `Verify Token`
+  - para operacao real, considerar rotacao de `Access Token` e revisao de acessos do app se houver ex-responsavel com permissao
+
 ## Skills disponiveis nesta sessao
 
 ### Available skills
@@ -104,6 +127,12 @@
 - Se a tarefa for criar nova documentacao, fluxo de agente, checklist, memoria ou estrutura IA, centralizar nesta pasta `geral-ia/`.
 - Se a tarefa for editar aplicacao, preferir alterar diretamente a base funcional em `../OzonoTech2/` quando isso fizer mais sentido que duplicar arquivos aqui.
 - Registrar neste arquivo decisoes importantes de arquitetura, deploy, fluxo operacional ou conjunto de skills adotadas.
+- Todo novo projeto local com backend/container deve ficar isolado dos demais:
+  - pasta propria
+  - `docker-compose.yml` proprio
+  - containeres com prefixo do projeto
+  - banco/volume proprio por projeto
+  - nunca compartilhar banco ou volume entre projetos diferentes, salvo decisao explicita do usuario
 
 ## Frente ativa criada nesta pasta
 
@@ -126,11 +155,43 @@
   - endpoints de runtime expostos em `/api/v1/whatsapp/*` e compatibilidade em `/api/whatsapp/*`
   - webhook de sincronizacao de eventos da bridge implementado
   - stack Docker local criada com `docker-compose.yml` para `api + mongo`
+  - isolamento local definido por projeto: `teste-whats` usa containeres e volumes proprios, sem compartilhar banco com outras frentes
 - Proximo passo previsto:
   - conectar a API a uma bridge backend real para WhatsApp
   - trocar QR simulado por QR real
   - persistir sessao operacional fora do navegador
   - integrar envio e recebimento de mensagens
+
+## Ponto de retomada atual
+
+- Repositorio `geral-ia` inicializado e publicado no GitHub:
+  - remoto: `https://github.com/gitcesarrabellopedroso-debug/geral-ia.git`
+  - branch atual: `master`
+- Ultimos commits publicados:
+  - `8281490` - `feat: add whatsapp runtime backend integration layer`
+  - `3ed1e4e` - `feat: add local docker stack for teste-whats api`
+- Estado atual de `teste-whats`:
+  - frontend local pronto em `./teste-whats/`
+  - API Python pronta em `./teste-whats/api/`
+  - runtime de sessao WhatsApp exposto em `/api/v1/whatsapp/*`
+  - compatibilidade adicional em `/api/whatsapp/*`
+  - MongoDB local previsto no `docker-compose.yml`
+  - bridge local self-hosted adicionada em `./teste-whats/bridge/` usando `Node.js + Baileys`
+  - stack local validada com tres servicos: `teste-whats-api`, `teste-whats-bridge`, `teste-whats-mongo`
+  - frontend atualizado para renderizar `qr_image_data_url` real e usar `http://localhost:8000` por padrao no modo API
+  - endpoint de envio real de mensagem implementado localmente em `POST /api/whatsapp/messages/send`
+- Como subir localmente na retomada:
+  1. entrar em `./teste-whats/`
+  2. rodar `docker compose up --build`
+  3. acessar `http://localhost:8000/docs`
+  4. abrir `./teste-whats/index.html`
+  5. selecionar `API externa`
+  6. usar `http://localhost:8000`
+  7. iniciar sessao para gerar QR real via bridge local
+- Proximo passo tecnico ao retomar:
+  - decidir entre manter a bridge local apenas para testes ou migrar a integracao para `WhatsApp Cloud API`
+  - se seguir com a stack local, validar envio real apos pareamento com numero de teste adequado
+  - se migrar para Cloud API, levantar `Phone Number ID`, `WABA ID`, `Access Token`, `App ID` e `App Secret` em `Scalle_wpp`
 
 ## Checklist rapido para iniciar qualquer frente
 

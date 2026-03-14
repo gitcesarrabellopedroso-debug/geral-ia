@@ -9,6 +9,7 @@ from app.clients.whatsapp_bridge import (
 from app.core.config import Settings
 from app.repositories.whatsapp_session_repository import WhatsAppSessionRepository
 from app.schemas.whatsapp_session import WhatsAppBridgeWebhookPayload, WhatsAppRuntimeResponse
+from app.schemas.whatsapp_session import WhatsAppSendMessageResponse
 
 
 class WhatsAppRuntimeService:
@@ -83,6 +84,31 @@ class WhatsAppRuntimeService:
             },
         )
         return self._document_to_runtime(document)
+
+    async def send_runtime_message(
+        self,
+        *,
+        session_key: str | None = None,
+        phone: str,
+        text: str,
+    ) -> WhatsAppSendMessageResponse:
+        normalized_key = self._get_session_key(session_key)
+
+        try:
+            bridge_payload = await self.bridge_client.send_message(normalized_key, phone=phone, text=text)
+        except WhatsAppBridgeNotConfiguredError as exc:
+            raise RuntimeError("WhatsApp bridge is not configured.") from exc
+        except WhatsAppBridgeError as exc:
+            raise RuntimeError(str(exc)) from exc
+
+        return WhatsAppSendMessageResponse(
+            session_key=normalized_key,
+            provider_message_id=bridge_payload.get("provider_message_id") or bridge_payload.get("message_id"),
+            to=bridge_payload.get("to") or phone,
+            text=bridge_payload.get("text") or text,
+            status=bridge_payload.get("status") or "sent",
+            metadata=bridge_payload.get("metadata", {}),
+        )
 
     def _get_session_key(self, session_key: str | None) -> str:
         return (session_key or self.settings.whatsapp_default_session_key).strip().lower()

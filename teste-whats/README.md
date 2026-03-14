@@ -14,6 +14,8 @@ Projeto inicial de interface para validar o fluxo de conexao do WhatsApp antes d
 - `index.html`: interface principal
 - `styles.css`: visual
 - `app.js`: logica local e integracao futura com API
+- `bridge/`: bridge local self-hosted para WhatsApp Web via Baileys
+- `api/`: API Python que consulta a bridge e persiste o estado
 
 ## Como testar agora
 
@@ -28,6 +30,44 @@ Fluxo local:
 5. Clique em `Desconectar` para limpar a sessao
 
 Os dados ficam no `localStorage` do navegador para simular persistencia.
+
+## Como testar com WhatsApp real local
+
+### Opcao recomendada com Docker
+
+```bash
+cd /Users/cesarrabello/Documents/1_projetos_python/sistemas/ozonotech/geral-ia/teste-whats
+docker compose up --build
+```
+
+Servicos:
+
+- frontend estatico: abrir `index.html` no navegador
+- API local: `http://localhost:8000`
+- docs da API: `http://localhost:8000/docs`
+- bridge local do WhatsApp: `http://localhost:8081/health`
+
+Depois:
+
+1. abrir `index.html`
+2. mudar `Modo` para `API externa`
+3. manter `Base URL da API` como `http://localhost:8000`
+4. clicar em `Salvar configuracao`
+5. clicar em `Iniciar sessao`
+6. ler o QR real com o WhatsApp
+7. apos conectar, preencher numero e mensagem no card `Envio real`
+8. clicar em `Enviar mensagem`
+
+### Opcao sem Docker para a bridge
+
+```bash
+cd /Users/cesarrabello/Documents/1_projetos_python/sistemas/ozonotech/geral-ia/teste-whats/bridge
+cp .env.example .env
+npm install
+npm start
+```
+
+Nesse caso, a bridge sobe em `http://localhost:8081`.
 
 ## Contrato previsto para a API real
 
@@ -86,7 +126,7 @@ Resposta esperada:
 
 Depois desta fase de projeto:
 
-1. criar uma bridge backend para WhatsApp
-2. substituir `qrToken` por QR real
-3. persistir sessao fora do navegador
-4. integrar envio e recebimento de mensagens
+1. validar o pareamento real com a bridge local
+2. validar envio real de mensagens
+3. persistir sessao operacional no ambiente definitivo
+4. integrar recebimento de mensagens e webhooks

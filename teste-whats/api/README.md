@@ -32,6 +32,7 @@ Servicos:
 - API: `http://localhost:8000`
 - Docs Swagger: `http://localhost:8000/docs`
 - MongoDB: `mongodb://localhost:27017`
+- Bridge local: `http://localhost:8081/health`
 
 ### 1. Subir MongoDB
 
@@ -74,6 +75,7 @@ docker compose down
 - `GET /api/v1/whatsapp/status`
 - `POST /api/v1/whatsapp/session/start`
 - `POST /api/v1/whatsapp/session/disconnect`
+- `POST /api/v1/whatsapp/messages/send`
 - `POST /api/v1/whatsapp/webhooks/session-events`
 
 Compatibilidade com o frontend atual:
@@ -81,6 +83,7 @@ Compatibilidade com o frontend atual:
 - `GET /api/whatsapp/status`
 - `POST /api/whatsapp/session/start`
 - `POST /api/whatsapp/session/disconnect`
+- `POST /api/whatsapp/messages/send`
 - `POST /api/whatsapp/webhooks/session-events`
 
 ## Bridge real do WhatsApp
@@ -102,6 +105,8 @@ Variaveis novas:
 - `BACKEND_CORS_ORIGINS`
 
 ### Contrato esperado da bridge
+
+Existe agora uma implementacao local pronta em `../bridge/`, usando `Node.js + Baileys`.
 
 #### `POST /sessions/{session_key}/start`
 

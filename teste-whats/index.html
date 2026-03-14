@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste Whats</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Projeto inicial</p>
+        <h1>Teste Whats</h1>
+        <p class="hero-text">
+          Interface inicial para validar o fluxo de conexao do WhatsApp com QR Code,
+          sessao persistente e status operacional antes da fase de infraestrutura.
+        </p>
+      </div>
+
+      <div class="hero-status">
+        <span class="status-badge" id="connectionBadge">Desconectado</span>
+        <p class="status-caption" id="statusCaption">
+          Aguardando inicio de sessao local.
+        </p>
+      </div>
+    </section>
+
+    <section class="grid-layout">
+      <article class="panel panel-qr">
+        <div class="panel-head">
+          <div>
+            <p class="panel-kicker">Conexao</p>
+            <h2>QR Code</h2>
+          </div>
+          <button class="ghost-button" id="refreshButton" type="button">Atualizar</button>
+        </div>
+
+        <div class="qr-stage" id="qrStage">
+          <div class="qr-placeholder" id="qrPlaceholder">
+            <span>QR indisponivel</span>
+            <small>Inicie a sessao para gerar um QR de teste.</small>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="primary-button" id="startButton" type="button">Iniciar sessao</button>
+          <button class="secondary-button" id="simulateConnectButton" type="button">Simular leitura</button>
+          <button class="danger-button" id="disconnectButton" type="button">Desconectar</button>
+        </div>
+      </article>
+
+      <article class="panel panel-summary">
+        <div class="panel-head">
+          <div>
+            <p class="panel-kicker">Sessao</p>
+            <h2>Estado atual</h2>
+          </div>
+        </div>
+
+        <dl class="info-list">
+          <div>
+            <dt>Status</dt>
+            <dd id="sessionStatus">offline</dd>
+          </div>
+          <div>
+            <dt>ID da sessao</dt>
+            <dd id="sessionId">-</dd>
+          </div>
+          <div>
+            <dt>Ultima atualizacao</dt>
+            <dd id="lastUpdate">-</dd>
+          </div>
+          <div>
+            <dt>Telefone pareado</dt>
+            <dd id="phoneValue">-</dd>
+          </div>
+        </dl>
+
+        <div class="note-box">
+          <strong>Fase atual</strong>
+          <p>
+            Este projeto esta em modo local para validar UX e fluxo. A bridge real
+            do WhatsApp entra na proxima etapa.
+          </p>
+        </div>
+      </article>
+
+      <article class="panel panel-config">
+        <div class="panel-head">
+          <div>
+            <p class="panel-kicker">Configuracao</p>
+            <h2>Modo de execucao</h2>
+          </div>
+        </div>
+
+        <label class="field">
+          <span>Modo</span>
+          <select id="modeSelect">
+            <option value="mock">Local de teste</option>
+            <option value="api">API externa</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Base URL da API</span>
+          <input id="apiBaseInput" type="text" placeholder="http://localhost:8080">
+        </label>
+
+        <button class="secondary-button wide-button" id="saveConfigButton" type="button">
+          Salvar configuracao
+        </button>
+
+        <p class="microcopy">
+          Em modo local, o projeto simula QR, conexao e desconexao. Em modo API, ele
+          tenta conversar com os endpoints reais definidos no README.
+        </p>
+      </article>
+
+      <article class="panel panel-log">
+        <div class="panel-head">
+          <div>
+            <p class="panel-kicker">Operacao</p>
+            <h2>Eventos</h2>
+          </div>
+          <button class="ghost-button" id="clearLogButton" type="button">Limpar</button>
+        </div>
+
+        <ul class="event-log" id="eventLog"></ul>
+      </article>
+    </section>
+  </main>
+
+  <template id="logItemTemplate">
+    <li class="event-item">
+      <span class="event-time"></span>
+      <div class="event-body">
+        <strong class="event-title"></strong>
+        <p class="event-message"></p>
+      </div>
+    </li>
+  </template>
+
+  <script src="./app.js"></script>
+</body>
+</html>

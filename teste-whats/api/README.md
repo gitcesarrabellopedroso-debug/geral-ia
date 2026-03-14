@@ -20,6 +20,19 @@ API em Python com FastAPI + MongoDB, estruturada para evoluir junto da frente `t
 
 ## Rodando localmente
 
+### Opcao mais simples com Docker
+
+```bash
+cd /Users/cesarrabello/Documents/1_projetos_python/sistemas/ozonotech/geral-ia/teste-whats
+docker compose up --build
+```
+
+Servicos:
+
+- API: `http://localhost:8000`
+- Docs Swagger: `http://localhost:8000/docs`
+- MongoDB: `mongodb://localhost:27017`
+
 ### 1. Subir MongoDB
 
 ```bash
@@ -41,6 +54,13 @@ pip install -e .
 
 ```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### Derrubar containers locais
+
+```bash
+cd /Users/cesarrabello/Documents/1_projetos_python/sistemas/ozonotech/geral-ia/teste-whats
+docker compose down
 ```
 
 ## Endpoints iniciais

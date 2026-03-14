@@ -1,0 +1,42 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: teste-whats-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - teste_whats_mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: teste-whats-api
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    env_file:
+      - ./api/.env.example
+    environment:
+      APP_ENV: docker
+      APP_DEBUG: "true"
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8000
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DB_NAME: teste_whats
+      BACKEND_CORS_ORIGINS: "*"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api/app:/app/app
+
+volumes:
+  teste_whats_mongo_data:

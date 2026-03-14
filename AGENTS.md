@@ -125,6 +125,7 @@
   - backend agora possui camada de runtime para sessao WhatsApp real via bridge HTTP configuravel
   - endpoints de runtime expostos em `/api/v1/whatsapp/*` e compatibilidade em `/api/whatsapp/*`
   - webhook de sincronizacao de eventos da bridge implementado
+  - stack Docker local criada com `docker-compose.yml` para `api + mongo`
 - Proximo passo previsto:
   - conectar a API a uma bridge backend real para WhatsApp
   - trocar QR simulado por QR real

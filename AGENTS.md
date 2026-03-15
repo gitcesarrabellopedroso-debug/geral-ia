@@ -193,6 +193,39 @@
   - se seguir com a stack local, validar envio real apos pareamento com numero de teste adequado
   - se migrar para Cloud API, levantar `Phone Number ID`, `WABA ID`, `Access Token`, `App ID` e `App Secret` em `Scalle_wpp`
 
+## Playbook Meta / WhatsApp
+
+- Documento operacional dedicado: `./meta-whatsapp-playbook.md`
+- Estrutura principal validada na Meta:
+  - portfolio principal: `BWS`
+  - conta do WhatsApp principal: `UZA Multinivel`
+  - numero real atual: `+55 19 99727-5276`
+  - app principal: `Scalle_wpp`
+  - system user tecnico atual: `scalee_api_2`
+- Dados tecnicos ja levantados:
+  - `Phone Number ID`: `926220003913113`
+  - `WABA ID`: `1241971824445557`
+  - `App ID`: `1536921637532151`
+  - `Verify Token` definido para a futura aplicacao: `scalee_whatsapp_20260314`
+  - `Access Token` atual valido deve ser o gerado no `scalee_api_2`
+- Regra operacional atual:
+  - operar no portfolio `BWS`
+  - usar `UZA Multinivel` para numeros reais
+  - manter `Test WhatsApp Business Account` apenas como teste
+  - deixar `BWS UZA multinivel` parado por enquanto
+  - deixar `UZA Multinivel` legado/congelado para revisao futura
+  - considerar `uza_app` como legado; tokens antigos revogados
+- Fluxo padrao daqui para frente:
+  - novo numero: adicionar no `BWS`, verificar, revisar display name, pegar `Phone Number ID`, testar envio
+  - novo cliente: decidir se entra no `BWS` temporariamente ou em portfolio proprio
+  - novo portfolio: criar separado, nomear corretamente e so depois preparar WhatsApp
+- Importante:
+  - o `Webhook URL` final deve ser da propria aplicacao
+  - o `Webhook URL` antigo `https://webhook.scalee.com.br/webhook/b58c422d-6251-43f4-a40b-85bdf1d456ab/webhook` nao deve ser tratado como definitivo sem controle do backend
+  - o webhook antigo em `webhook.scalee.com.br` nao deve ser tratado como base definitiva se nao houver controle do backend
+  - na Meta, o campo `messages` ja ficou assinado no webhook atual
+  - para receber mensagens automaticamente ainda falta criar a rota de webhook na aplicacao e sincronizar com a Meta
+
 ## Checklist rapido para iniciar qualquer frente
 
 1. Confirmar se a tarefa e de documentacao/organizacao (`geral-ia`) ou de produto/sistema (`../OzonoTech2/`).

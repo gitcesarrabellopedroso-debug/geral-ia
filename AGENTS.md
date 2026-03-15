@@ -193,6 +193,33 @@
   - se seguir com a stack local, validar envio real apos pareamento com numero de teste adequado
   - se migrar para Cloud API, levantar `Phone Number ID`, `WABA ID`, `Access Token`, `App ID` e `App Secret` em `Scalle_wpp`
 
+## Retomada n8n / WhatsApp IA
+
+- Frente em andamento no `n8n web`: fluxo `Chatbot de IA do WhatsApp`
+- Estado confirmado na ultima sessao:
+  - credencial OAuth do WhatsApp configurada com o app `Scalle_wpp`
+  - credencial de envio do WhatsApp configurada com `Access Token` atual e `Phone Number ID` `926220003913113`
+  - credencial OpenAI configurada e validada
+  - webhook da Meta apontado para o `n8n`
+  - campo `messages` ficou assinado
+  - envio manual de mensagem pelo node `Enviar mensagem` funcionou
+- Problema encontrado:
+  - o fluxo entrou em loop porque respondeu tambem a eventos de status/eco do proprio WhatsApp
+  - o fluxo foi `Despublicado` para interromper o loop
+- Estado do fluxo ao pausar:
+  - ordem atual: `Gatilho do WhatsApp` -> `Se` -> `Assistente de IA` -> `Enviar mensagem`
+  - node `Memoria de Conversa` foi desconectado do `Assistente de IA` para simplificar o teste
+  - condicao do node `Se` foi alterada para tentar filtrar eventos sem mensagem, mas ainda precisa validacao final antes de republicar
+- Proximo passo ao retomar no `n8n`:
+  1. abrir o fluxo `Chatbot de IA do WhatsApp` no `n8n web`
+  2. revisar o JSON de entrada do `Gatilho do WhatsApp` para separar `messages` de `status`
+  3. ajustar o node `Se` para deixar passar apenas eventos com mensagem real recebida do cliente
+  4. publicar novamente
+  5. testar com uma unica mensagem e confirmar que responde uma vez so, sem loop
+- Referencia operacional:
+  - abrir esta pasta local `geral-ia/` para contexto e memoria
+  - abrir em paralelo o fluxo no `n8n web`; nao existe pasta local do fluxo
+
 ## Playbook Meta / WhatsApp
 
 - Documento operacional dedicado: `./meta-whatsapp-playbook.md`
